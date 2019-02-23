@@ -3,6 +3,7 @@
 You can run this code by:
 
 ```
+npm install
 node server.js
 ```
 
