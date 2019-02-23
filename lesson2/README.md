@@ -1,4 +1,4 @@
-#Working example# Learning Node.js and Express
+# Learning Node.js and Express
 
 You can run this code by:
 
