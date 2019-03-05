@@ -8,6 +8,12 @@ because it makes it easy for me to always get the latest stable
 versions of node and npm. It also installs into my local directory,
 rather than polluting the globally installed packages.
 
+**If you are on a Mac, be sure to first do this:**
+
+```
+touch ~/.bash_profile
+```
+
 To install nvm, visit the [nvm](https://github.com/creationix/nvm)
 web page and copy installation command that uses curl so you can have
 the latest version. For example:
