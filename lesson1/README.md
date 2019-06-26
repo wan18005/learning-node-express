@@ -188,13 +188,11 @@ follow](https://www.vinaysahni.com/best-practices-for-a-pragmatic-restful-api).
 
 ![guidelines](images/guidelines.jpg)
 
-A good example is:
-
 For example, if you build a web site for an art museum, your server
 may need an API that does some of the following:
 
 Route | HTTP method | Description
----------------------------------
+------| ------------|---------------
 /api/art | GET | get all the art pieces held by the museum
 /api/art | POST | create a new art piece held by the museum
 /api/art/:id | GET | get a single art piece
