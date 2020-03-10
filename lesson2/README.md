@@ -1,14 +1,24 @@
-# Learning Node.js and Express
+# Lesson 2: A help ticket server
 
-You can run this code by:
+Let's build a help ticket server and a Vue front end for submitting tickets. We'll assume a ticket has a name and a problem being reported.
+
+You can run the back end code by:
 
 ```
+cd lesson2/back-end
+npm install
 node server.js
 ```
 
-## Lesson 2: A help ticket server
+You can run the front end code by:
 
-Let's build a help ticket server and a Vue front end for submitting tickets. We'll assume a ticket has a name and a problem being reported.
+```
+cd lesson2/front-end
+npm install
+npm run serve
+```
+
+## Back end
 
 The first step is to initialize a new project. You do
 this with `npm init`.
@@ -16,6 +26,8 @@ this with `npm init`.
 ```
 mkdir lesson2
 cd lesson2
+mkdir back-end
+cd back-end
 npm init
 ```
 
@@ -143,27 +155,90 @@ $ curl localhost:3000/api/tickets
 [{"id":1,"name":"Daniel","problem":"Nothing works! This software is junk!"},{"id":2,"name":"Daniel","problem":"Never mind, this system is cool. It was a feature, not a bug!"}]
 ```
 
-
 ## Vue front end
 
-In the `public` directory, you'll find a Vue front end for adding and deleting tickets.  This code
-should be easy to follow given what we've done with Vue so far.
+The `front-end` directory contains the front end code, using Vue CLI.
 
-When you run `node tickets.js`, then the node server will deliver
-`/public/index.html` because we have included this line:
+This code is identical to the ticket server built in [Learning the Vue
+CLI](https://github.com/BYU-CS-260/learning-vue-cli), with modifications to make
+it work with a back end instead of storing the tickets in a global data
+structure.
+
+Let's run through the changes.
+
+### No global data structure
+
+First, if you look at `src/main.js`, there is no global data structure:
 
 ```
-app.use(express.static('public'));
+new Vue({
+  router,
+  render: h => h(App)
+}).$mount('#app')
 ```
 
-This causes the browser to load the HTML, CSS, and JavaScript for the front end. Inside this code, you'll see some methods that use `axios` to call the REST API defined by the back end in `tickets.js`.
+### Adding and deleting tickets
 
-Let's run through each of these methods:
+Second, the home page in `src/views/Home.vue` now uses the
+[axios](https://github.com/axios/axios) library to fetch data from the back end
+instead of from the global data structure:
 
 ```
+<script>
+import axios from 'axios';
+export default {
+  name: 'home',
+  data() {
+    return {
+      tickets: [],
+    }
+  },
+  created() {
+    this.getTickets();
+  },
+  methods: {
     async getTickets() {
       try {
-        let response = await axios.get("http://localhost:3000/api/tickets");
+        let response = await axios.get("/api/tickets");
+        this.tickets = response.data;
+        return true;
+      } catch (error) {
+        console.log(error);
+      }
+    },
+    deleteTicket(item) {
+      try {
+        let response = await axios.delete("/api/tickets/" + ticket.id);
+        this.getTickets();
+        return true;
+      } catch (error) {
+        console.log(error);
+      }
+    }
+  }
+}
+</script>
+```
+
+Notice that we store `tickets` as a property on the data object for the view. To
+load the current set of tickets when the page is loaded, we use a `created()`
+function. Think of this as initializing Vue for this page. This method calls
+`getTickets()`, which is defined in the `methods` section.
+
+To get tickets from the server, we could use `fetch`, but I like to use the
+Axios library. To use it, I ran `npm install axios`, and then put an import
+statement at the top of the `script` section of the view:
+
+```
+import axios from 'axios';
+```
+
+Then we need to make an async `getTickets()` function:
+
+```
+  async getTickets() {
+      try {
+        let response = await axios.get("/api/tickets");
         this.tickets = response.data;
         return true;
       } catch (error) {
@@ -172,42 +247,92 @@ Let's run through each of these methods:
     },
 ```
 
-This method uses the REST API to get the current list of tickets. It puts the response data directly into the `tickets` property, which is displayed in `index.html`.
+This calls `axios.get` to get the data from our server's REST API and then store
+the returned tickets in `this.tickets`. It uses `await` to wait for this to
+happen instead of the older Promise `.then` syntax.
 
-Note that we call this method when the Vue instance is created. See the `created()` section. We also call it whenever we change the set of tickets.
+I also added a button to delete tickets in the `template` section of this component:
 
 ```
-    async addTicket() {
+<button @click="deleteTicket(ticket)" />
+```
+
+And then the corresponding `deleteTicket()` method:
+
+```
+  deleteTicket(item) {
       try {
-        let response = await axios.post("http://localhost:3000/api/tickets", {
-          name: this.addedName,
-          problem: this.addedProblem
-        });
-        this.addedName = "";
-        this.addedProblem = "";
-        this.getTickets();
-        return true;
-      } catch (error) {
-        console.log(error);
-      }
-    },
-```
-
-This method uses the REST API to create a new ticket. Typically a REST API uses POST to create a new resource and UPDATE to edit it. Because this is a POST request, we supply a body that includes two properties needed by the API: `name`, and `problem`.
-
-Once we create the new ticket, we call the API to fetch the list of tickets.
-
-```
-    async deleteTicket(ticket) {
-      try {
-        let response = axios.delete("http://localhost:3000/api/tickets/" + ticket.id);
+        let response = await axios.delete("/api/tickets/" + ticket.id);
         this.getTickets();
         return true;
       } catch (error) {
         console.log(error);
       }
     }
-
 ```
 
-This method uses the REST API to delete a ticket. We supply the specific ID of the ticket we are deleting by appending it to the URL. Notice that we get this ticket ID from `index.html`. When we iterate through the list of tickets using `v-for`, we can pass `ticket` to the `deleteTicket` method.
+This method uses the REST API to delete a ticket. We supply the specific ID of
+the ticket we are deleting by appending it to the URL. Notice that we get this
+ticket ID from `index.html`. When we iterate through the list of tickets using
+`v-for`, we can pass `ticket` to the `deleteTicket` method.
+
+### Creating tickets
+
+To create tickets, we modify the `addTicket()` function in `src/views/Create.view`:
+
+```
+    async addTicket() {
+      try {
+        await axios.post("/api/tickets", {
+          name: this.name,
+          problem: this.problem
+        });
+        this.name = "";
+        this.problem = "";
+        this.creating = false;
+        return true;
+      } catch (error) {
+        console.log(error);
+      }
+```
+
+This method uses the REST API to create a new ticket. Typically a REST API uses POST to create a new resource and UPDATE to edit it. Because this is a POST request, we supply a body that includes two properties needed by the API: `name`, and `problem`.
+
+### Super Important -- Avoiding CORS errors
+
+We're going to be running a server for the front end at `localhost:8080` and a
+server for the back end at `localhost:3000`. This will cause CORS errors! CORS
+is designed to make sure that if your browser is currently visiting
+`amazon.com`, it can't also make a request to `stealmycreditcard.com`, a site
+controlled by an attacker.
+
+In our case, we control both of these websites, and need to ensure that our
+front end server can talk to the back end server. We do this by creating a file
+in `front-end/vue.config.js`. This configures the server that the Vue CLI starts
+to `proxy` requests for the back end. This will tell it to send any request it
+doesn't handle  to the back end server.
+
+The `front-end/vue.config.js` file should contain:
+
+```
+module.exports = {
+  devServer: {
+    proxy: 'http://localhost:3000',
+  }
+}
+```
+
+You will  need to restart the Vue CLI front-end server for this to work. So if
+you need to, use `control-c` to stop the Vue CLI server and then start it again
+with
+
+```
+npm run serve
+```
+
+### Super Important -- Digital Ocean
+
+When you setup a Vue CLI app to run on Digital Ocean, you will need to run a similar
+setup. In this case, nginx will be the front end server (instead of npm run serve)
+and you will still run `node ticket.js` as your back end server on port 3000. We
+will show you later how to set this up.
