@@ -206,9 +206,9 @@ export default {
         console.log(error);
       }
     },
-    deleteTicket(item) {
+    async deleteTicket(ticket) {
       try {
-        let response = await axios.delete("/api/tickets/" + ticket.id);
+        await axios.delete("/api/tickets/" + ticket.id);
         this.getTickets();
         return true;
       } catch (error) {
@@ -260,15 +260,15 @@ I also added a button to delete tickets in the `template` section of this compon
 And then the corresponding `deleteTicket()` method:
 
 ```
-  deleteTicket(item) {
-      try {
-        let response = await axios.delete("/api/tickets/" + ticket.id);
-        this.getTickets();
-        return true;
-      } catch (error) {
-        console.log(error);
-      }
+  async deleteTicket(ticket) {
+    try {
+      await axios.delete("/api/tickets/" + ticket.id);
+      this.getTickets();
+      return true;
+    } catch (error) {
+      console.log(error);
     }
+  }
 ```
 
 This method uses the REST API to delete a ticket. We supply the specific ID of
