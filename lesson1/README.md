@@ -1,16 +1,15 @@
-# Learning Node.js and Express
+# Lesson 1: A Hello World for Node.js and Express
+
+We're going to build a basic Node.js server that uses Express for the
+API.
 
 You can run this code by:
 
 ```
+cd lesson1
 npm install
 node server.js
 ```
-
-## Lesson 1: A Hello World for Node.js and Express
-
-We're going to build a basic Node.js server that uses Express for the
-API.
 
 ## Initialize a new node project
 
@@ -59,7 +58,7 @@ install all the dependencies for your project. To see how this works,
 you can always try cloning your repository to a new directory and do
 `npm install` there.
 
-### Hello World
+## Hello World
 
 We're now going to build a basic node server with Express. Create a
 file called `server.js` that contains:

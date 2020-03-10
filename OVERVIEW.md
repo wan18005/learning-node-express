@@ -41,6 +41,9 @@ event is finished, it will execute the anonymous function (it takes
 error and data as parameters). Instead of waiting for this event to
 finish, JavaScript will execute the part that reads *more work here*.
 
+See our prior activity [JavaScript Promises](https://github.com/BYU-CS-260/promises)
+for a refresher on this concept.
+
 ## Web server
 
 Node has a built-in HTTP library that you can use to create a web server.
